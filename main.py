@@ -1,9 +1,12 @@
-from typing import List, Any
-
 import requests
 from bs4 import BeautifulSoup
 
-siteURL = "https://www.kijiji.ca/b-apartments-condos/city-of-toronto/c37l1700273"
+siteAddress = "https://www.kijiji.ca"
+siteToronto = "/b-apartments-condos/city-of-toronto/page-"
+siteCategory = "/c37l1700273"
+sitePageNum = "1"
+siteURL = siteAddress + siteToronto + sitePageNum + siteCategory
+#<a href="/b-apartments-condos/city-of-toronto/page-2/c37l1700273">2</a> - pages
 
 
 class Apartment:
@@ -42,21 +45,20 @@ headers = {
     'accept-language': 'en-US,en;q=0.9',
 }
 
-page = requests.get(siteURL)
+page = requests.get(siteAddress + siteToronto + sitePageNum + siteCategory)
 
 if page.status_code == 200:
     print(page.status_code)
     print(f'Connection Open!')
     session = requests.session()
-    allItems = []
+    allDateItems = []
     filteredItems = []
     response = session.get(siteURL, headers=headers)
 
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    #print(soup)
-    allItems = soup.find_all('span', attrs={"class":"date-posted"}) #it works!!!
-    print(allItems)
+    allDateItems = soup.find_all('span', attrs={"class":"date-posted"}) #it works!!!
+    print(allDateItems)
     #for data in allItems:
     #    if data.find('div', class_='left-col') is not None:
     #        filteredItems.append(data.text)
