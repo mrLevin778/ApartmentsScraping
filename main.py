@@ -1,5 +1,5 @@
 from typing import List, Any
-import datetime
+from datetime import datetime, timedelta
 import requests
 from bs4 import BeautifulSoup
 
@@ -9,9 +9,28 @@ siteCategory = "/c37l1700273"
 sitePageNum = 0
 allPages = []  # list of all pages
 lastPage = 94  # temporary variable
-dt = datetime.datetime.today()
-today = dt.strftime("%d-%m-%Y")
-elementId = 0
+elementId = 2
+
+# function for get dates(today and yesterday)
+def get_dates(day):
+    date_format = '%d-%m-%Y'
+    now = datetime.now()
+    if day == 't':
+        today = now.strftime(date_format)
+        return today
+    else:
+        yesterday = (now - timedelta(days=1)).strftime(date_format)
+        return yesterday
+
+
+# function for extracting text from text
+def extractTextFromTags(allItemsWithTag):
+    allItemsClearText = []
+    for item in allItemsWithTag:
+        clearItem = item.get_text(strip=True)
+        allItemsClearText.append(clearItem)
+    return allItemsClearText
+
 
 # now this class don't use
 class Apartment:
@@ -58,16 +77,8 @@ while True:
     allPages.append(siteAddress + siteToronto + str(sitePageNum) + siteCategory)
     if page.status_code != 200 or sitePageNum >= lastPage:
         break
-print(allPages[lastPage - 1])
+# print(allPages[lastPage - 1])
 print(len(allPages))
-
-# function for extracting text from text
-def extractTextFromTags(allItemsWithTag):
-    allItemsClearText = []
-    for item in allItemsWithTag:
-        clearItem = item.get_text(strip=True)
-        allItemsClearText.append(clearItem)
-    return allItemsClearText
 
 
 if page.status_code == 200:
@@ -77,8 +88,6 @@ if page.status_code == 200:
     response = session.get(siteURL, headers=headers)
 
     soup = BeautifulSoup(response.text, 'html.parser')
-
-    allImageURLItems = soup.find_all('div', attrs={"class": "image"})
 
     # extract price
     allPriceItems = soup.find_all('div', attrs={"class": "price"})
@@ -91,6 +100,9 @@ if page.status_code == 200:
     # extract title
     allTitleItems = soup.find_all('div', attrs={"class": "title"})
     clearTitleItems = extractTextFromTags(allTitleItems)
+
+    # extract image URL
+    allImageURLItems = soup.find_all('div', attrs={"class": "image"})
 
     # extract number of bedrooms
     allBedsNumItems = soup.find_all('span', attrs={"class": "bedrooms"})
@@ -111,18 +123,32 @@ if page.status_code == 200:
     clearLocationItemsTemp = extractTextFromTags(allLocationItems)
     clearLocationItems = []
     for item in clearLocationItemsTemp:
-        clearItem = (item[:-10])
-        clearLocationItems.append(clearItem)
+        if item.endswith('Yesterday'):
+            clearLocationItem = (item[:-9])
+        elif item.endswith('hours ago'):
+            clearLocationItem = (item[:-12])
+        elif item.endswith('minutes ago'):
+            clearLocationItem = (item[:-14])
+        else:
+            clearLocationItem = (item[:-10])
+        clearLocationItems.append(clearLocationItem)
 
     # alternate extract date
     clearDateItems = []
     for item in clearLocationItemsTemp:
         clearItem = (item[-10:])
-        if clearItem == 'oYesterday':
-            clearItem = today
+        # print(f'date: ' + clearItem)
+        yesterday = 'y'
+        today = 't'
+        if clearItem.endswith('Yesterday'):
+            clearItem = get_dates(yesterday)
+        elif clearItem.endswith(' ago'):
+            clearItem = get_dates(today)
         else:
             clearItem = clearItem.replace('/', '-')
         clearDateItems.append(clearItem)
+
+    print(f'Items on page: ' + str(len(clearDateItems)))
 
     # print(allImageURLItems[5])
     print(f'Price: ' + clearPriceItems[elementId])
