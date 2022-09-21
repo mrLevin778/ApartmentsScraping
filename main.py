@@ -71,8 +71,7 @@ def extractTextFromTags(allItemsWithTag):
 
 
 if page.status_code == 200:
-    print(page.status_code)
-    print(f'Connection Open!')
+    print(f'Connection Open! Status Code: ' + str(page.status_code))
     session = requests.session()
     siteURL = siteAddress + siteToronto + str(sitePageNum) + siteCategory
     response = session.get(siteURL, headers=headers)
@@ -94,16 +93,35 @@ if page.status_code == 200:
     clearTitleItems = extractTextFromTags(allTitleItems)
 
     # extract date
-    allDateItems = soup.find_all('span', attrs={"class": "date-posted"})
-    clearDateItems = extractTextFromTags(allDateItems)
+    # allDateItems = soup.find_all('span', attrs={"class": "date-posted"})
+    # clearDateItems = extractTextFromTags(allDateItems)
 
     # extract number of bedrooms
     allBedsNumItems = soup.find_all('span', attrs={"class": "bedrooms"})
-    clearBedsNumItems = extractTextFromTags(allBedsNumItems)
+    clearBedsNumItemsTemp = extractTextFromTags(allBedsNumItems)
+    clearBedsNumItems = []
+    for item in clearBedsNumItemsTemp:
+        clearItemTemp = (item[5:])
+        for item in range(len(clearItemTemp)):
+            if clearItemTemp[item].isdigit():
+                clearItem = ''
+                clearItem += str(clearItemTemp[item])
+        clearBedsNumItems.append(clearItem)
+
 
     # extract location
     allLocationItems = soup.find_all('div', attrs={"class": "location"})
-    clearLocationItems = extractTextFromTags(allLocationItems)
+    clearLocationItemsTemp = extractTextFromTags(allLocationItems)
+    clearLocationItems = []
+    for item in clearLocationItemsTemp:
+        clearItem = (item[:-10])
+        clearLocationItems.append(clearItem)
+
+    # alternate extract date
+    clearDateItems = []
+    for item in clearLocationItemsTemp:
+        clearItem = (item[-10:])
+        clearDateItems.append(clearItem)
 
     # print(allImageURLItems[5])
     print(f'Price: ' + clearPriceItems[5])
@@ -131,3 +149,5 @@ if page.status_code == 200:
     # print(apart.__repr__())
 else:
     print('Connection Error or end of pages!')
+
+# temp area!!!!!!!
