@@ -1,12 +1,17 @@
+from typing import Any
+
 import requests
 from bs4 import BeautifulSoup
+from bs4.element import ResultSet
 
 siteAddress = "https://www.kijiji.ca"
 siteToronto = "/b-apartments-condos/city-of-toronto/page-"
 siteCategory = "/c37l1700273"
 sitePageNum = "1"
 siteURL = siteAddress + siteToronto + sitePageNum + siteCategory
-#<a href="/b-apartments-condos/city-of-toronto/page-2/c37l1700273">2</a> - pages
+
+
+# <a href="/b-apartments-condos/city-of-toronto/page-2/c37l1700273">2</a> - pages
 
 
 class Apartment:
@@ -51,32 +56,41 @@ if page.status_code == 200:
     print(page.status_code)
     print(f'Connection Open!')
     session = requests.session()
-    allDateItems = []
-    filteredItems = []
     response = session.get(siteURL, headers=headers)
 
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    allDateItems = soup.find_all('span', attrs={"class":"date-posted"}) #it works!!!
-    print(allDateItems)
-    #for data in allItems:
+    allImageURLItems = soup.find_all('div', attrs={"class": "image"})
+    allPriceItems = soup.find_all('div', attrs={"class": "price"})
+    allDescriptionItems = soup.find_all('div', attrs={"class": "description"})
+    allTitleItems = soup.find_all('div', attrs={"class": "title"})
+    allDateItems = soup.find_all('span', attrs={"class": "date-posted"})  # it works!!!
+    allBedsNumItems = soup.find_all('span', attrs={"class": "bedrooms"})
+    allLocationItems = soup.find_all('div', attrs={"class": "location"})
+
+    print(allImageURLItems[5])
+    print(allPriceItems[5])
+    print(allDescriptionItems[5])
+    print(allTitleItems[5])
+    print(allDateItems[5])
+    print(allBedsNumItems[5])
+    print(allLocationItems[5])
+
+    # for data in allItems:
     #    if data.find('div', class_='left-col') is not None:
     #        filteredItems.append(data.text)
 
-    #for data in filteredItems:
-    #    print(data)
+    # for element in soup.find_all('div', class_='clearfix'):
+    # imageURL = element.find('img').get('data-src')
+    # price = element.find('div', class_='price').text.strip()
+    # description = element.find('div', class_='description').text.strip()
+    # title = element.find('div', class_='title').text.strip()
+    # date = element.find('span', class_='date-posted').text.strip()
+    # bedsNum = element.find('span', class_='bedrooms').text.strip()
+    # location = element.find('div', class_='location').text.strip()
 
-    #for element in soup.find_all('div', class_='clearfix'):
-        #imageURL = element.find('img').get('data-src')
-        #price = element.find('div', class_='price').text.strip()
-        #description = element.find('div', class_='description').text.strip()
-        #title = element.find('div', class_='title').text.strip()
-        #date = element.find('span', class_='date-posted').text.strip()
-        #bedsNum = element.find('span', class_='bedrooms').text.strip()
-        #location = element.find('div', class_='location').text.strip()
+    # apart = Apartment(imageURL, price, description, title, date, bedsNum, location)
 
-        #apart = Apartment(imageURL, price, description, title, date, bedsNum, location)
-
-        #print(apart.__repr__())
+    # print(apart.__repr__())
 else:
-    print('Connection Error!')
+    print('Connection Error or end of pages!')
