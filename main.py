@@ -1,25 +1,12 @@
-from typing import List, Any
 from datetime import datetime, timedelta
 import requests
 from bs4 import BeautifulSoup
-from sqlalchemy import create_engine, Column, Integer, String, DateTime
-from sqlalchemy.engine.url import URL
-from sqlalchemy.ext.declarative import declarative_base
-import psycopg2
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+
 
 siteAddress = "https://www.kijiji.ca"
 siteToronto = "/b-apartments-condos/city-of-toronto/page-"
 siteCategory = "/c37l1700273"
 sitePageNum = 0
-DATABASE = {
-    'drivername': 'postgres',
-    'host': 'localhost',
-    'port': '5432',
-    'username': 'postgres',
-    'password': 'password',
-    'database': 'apartments'
-}
 allPages = []  # list of all pages
 lastPage = 94  # temporary variable
 elementId = 2
@@ -43,30 +30,6 @@ def extractTextFromTags(allItemsWithTag):
         clearItem = item.get_text(strip=True)
         allItemsClearText.append(clearItem)
     return allItemsClearText
-
-
-# now this class don't use
-class Apartment:
-    imageURL = str
-    price = str
-    description = str
-    title = str
-    date = str
-    bedsNum = str
-    location = str
-
-    def __init__(self, imageurl, price, description, title,
-                 date, bedsnum, location):
-        self.imageURL = imageurl
-        self.price = price
-        self.description = description
-        self.title = title
-        self.date = date
-        self.bedsNum = bedsnum
-        self.location = location
-
-    def __repr__(self):
-        return str(self.__dict__)
 
 
 headers = {
@@ -180,18 +143,3 @@ else:
     print('Connection Error or end of pages!')
 
 # temp area!!!!!!!
-# database connection
-
-engine = create_engine(URL(**DATABASE))
-engine.connect()
-
-connection = psycopg2.connect(user="postgres", password="password")
-connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-
-cursor = connection.cursor()
-sql_create_database = ''
-
-cursor.execute('create database apartments')
-
-cursor.close()
-connection.close()
