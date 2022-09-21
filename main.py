@@ -81,9 +81,12 @@ if page.status_code == 200:
     for item in allDescriptionItems:
         clearItem = item.get_text(strip=True)
         clearDescriptionItems.append(clearItem)
+    # extract title WORK
     allTitleItems = soup.find_all('div', attrs={"class": "title"})
+    clearTitleItems = []
     for item in allTitleItems:
-        pass
+        clearItem = item.get_text(strip=True)
+        clearTitleItems.append(clearItem)
     allDateItems = soup.find_all('span', attrs={"class": "date-posted"})
     for item in allDateItems:
         pass
@@ -95,9 +98,9 @@ if page.status_code == 200:
         pass
 
     # print(allImageURLItems[5])
-    print(clearPriceItems[5])
-    print(clearDescriptionItems[5])
-    # print(allTitleItems[5])
+    print(f'Price: ' + clearPriceItems[5])
+    print(f'Description: '+ clearDescriptionItems[5])
+    print(f'Title: ' + clearTitleItems[5])
     # print(allDateItems[5])
     # print(allBedsNumItems[5])
     # print(allLocationItems[5])
