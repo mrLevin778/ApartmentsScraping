@@ -1,3 +1,5 @@
+from typing import List, Any
+import itertools
 import requests
 from bs4 import BeautifulSoup
 
@@ -9,7 +11,7 @@ sitePageNum = 0
 
 # <a href="/b-apartments-condos/city-of-toronto/page-2/c37l1700273">2</a> - pages
 
-
+# now this class don't use
 class Apartment:
     imageURL = str
     price = str
@@ -59,6 +61,7 @@ while True:
 print(allPages[lastPage - 1])
 print(len(allPages))
 
+# function for extracting text from text
 def extractTextFromTags(allItemsWithTag):
     allItemsClearText = []
     for item in allItemsWithTag:
@@ -78,35 +81,37 @@ if page.status_code == 200:
 
     allImageURLItems = soup.find_all('div', attrs={"class": "image"})
 
-    # extract price  WORK
+    # extract price
     allPriceItems = soup.find_all('div', attrs={"class": "price"})
     clearPriceItems = extractTextFromTags(allPriceItems)
 
-    # extract description WORK
+    # extract description
     allDescriptionItems = soup.find_all('div', attrs={"class": "description"})
     clearDescriptionItems = extractTextFromTags(allDescriptionItems)
 
-    # extract title WORK
+    # extract title
     allTitleItems = soup.find_all('div', attrs={"class": "title"})
     clearTitleItems = extractTextFromTags(allTitleItems)
 
+    # extract date
     allDateItems = soup.find_all('span', attrs={"class": "date-posted"})
-    for item in allDateItems:
-        pass
+    clearDateItems = extractTextFromTags(allDateItems)
+
+    # extract number of bedrooms
     allBedsNumItems = soup.find_all('span', attrs={"class": "bedrooms"})
-    for item in allBedsNumItems:
-        pass
+    clearBedsNumItems = extractTextFromTags(allBedsNumItems)
+
+    # extract location
     allLocationItems = soup.find_all('div', attrs={"class": "location"})
-    for item in allLocationItems:
-        pass
+    clearLocationItems = extractTextFromTags(allLocationItems)
 
     # print(allImageURLItems[5])
     print(f'Price: ' + clearPriceItems[5])
     print(f'Description: ' + clearDescriptionItems[5])
     print(f'Title: ' + clearTitleItems[5])
-    # print(allDateItems[5])
-    # print(allBedsNumItems[5])
-    # print(allLocationItems[5])
+    print(f'Date: ' + clearDateItems[5])
+    print(f'Bedrooms: ' + clearBedsNumItems[5])
+    print(f'Location: ' + clearLocationItems[5])
 
     # for data in allItems:
     #    if data.find('div', class_='left-col') is not None:
