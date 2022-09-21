@@ -2,6 +2,11 @@ from typing import List, Any
 from datetime import datetime, timedelta
 import requests
 from bs4 import BeautifulSoup
+from sqlalchemy import Column, ForeignKey, Integer, String, Text, Date, DateTime, create_engine
+from sqlalchemy.orm import relationship
+from sqlalchemy.ext.declarative import declarative_base
+import psycopg2
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 siteAddress = "https://www.kijiji.ca"
 siteToronto = "/b-apartments-condos/city-of-toronto/page-"
@@ -167,3 +172,18 @@ else:
     print('Connection Error or end of pages!')
 
 # temp area!!!!!!!
+# database connection
+
+engine = create_engine("postgresql+psycopg2://postgres:password@localhost:5432/Apartment")
+engine.connect()
+
+connection = psycopg2.connect(user="postgres", password="password")
+connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+
+cursor = connection.cursor()
+sql_create_database =
+
+cursor.execute('create database apartments')
+
+cursor.close()
+connection.close()
