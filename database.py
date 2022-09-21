@@ -1,4 +1,3 @@
-import main
 from sqlalchemy import Column, ForeignKey, Integer, String, Text, Date, DateTime, create_engine
 
 class Apartment():

@@ -2,8 +2,8 @@ from typing import List, Any
 from datetime import datetime, timedelta
 import requests
 from bs4 import BeautifulSoup
-from sqlalchemy import Column, ForeignKey, Integer, String, Text, Date, DateTime, create_engine
-from sqlalchemy.orm import relationship
+from sqlalchemy import create_engine, Column, Integer, String, DateTime
+from sqlalchemy.engine.url import URL
 from sqlalchemy.ext.declarative import declarative_base
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
@@ -12,6 +12,14 @@ siteAddress = "https://www.kijiji.ca"
 siteToronto = "/b-apartments-condos/city-of-toronto/page-"
 siteCategory = "/c37l1700273"
 sitePageNum = 0
+DATABASE = {
+    'drivername': 'postgres',
+    'host': 'localhost',
+    'port': '5432',
+    'username': 'postgres',
+    'password': 'password',
+    'database': 'apartments'
+}
 allPages = []  # list of all pages
 lastPage = 94  # temporary variable
 elementId = 2
@@ -174,14 +182,14 @@ else:
 # temp area!!!!!!!
 # database connection
 
-engine = create_engine("postgresql+psycopg2://postgres:password@localhost:5432/Apartment")
+engine = create_engine(URL(**DATABASE))
 engine.connect()
 
 connection = psycopg2.connect(user="postgres", password="password")
 connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
 
 cursor = connection.cursor()
-sql_create_database =
+sql_create_database = ''
 
 cursor.execute('create database apartments')
 
