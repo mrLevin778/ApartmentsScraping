@@ -7,8 +7,8 @@ from bs4.element import ResultSet
 siteAddress = "https://www.kijiji.ca"
 siteToronto = "/b-apartments-condos/city-of-toronto/page-"
 siteCategory = "/c37l1700273"
-sitePageNum = "1"
-siteURL = siteAddress + siteToronto + sitePageNum + siteCategory
+sitePageNum = 0
+siteURL = siteAddress + siteToronto + str(sitePageNum) + siteCategory
 
 
 # <a href="/b-apartments-condos/city-of-toronto/page-2/c37l1700273">2</a> - pages
@@ -50,7 +50,17 @@ headers = {
     'accept-language': 'en-US,en;q=0.9',
 }
 
-page = requests.get(siteAddress + siteToronto + sitePageNum + siteCategory)
+allPages = []
+lastPage = 94
+
+page = requests.get(siteAddress + siteToronto + str(sitePageNum) + siteCategory)
+while True:
+    sitePageNum += 1
+    allPages.append(siteAddress + siteToronto + str(sitePageNum) + siteCategory)
+    print("URL added!")
+    if page.status_code != 200 or sitePageNum >= lastPage:
+        break
+print(allPages[lastPage - 1])
 
 if page.status_code == 200:
     print(page.status_code)
