@@ -1,6 +1,7 @@
 from typing import Any
 
 import requests
+import lxml
 from bs4 import BeautifulSoup
 from bs4.element import ResultSet
 
@@ -57,10 +58,10 @@ page = requests.get(siteAddress + siteToronto + str(sitePageNum) + siteCategory)
 while True:
     sitePageNum += 1
     allPages.append(siteAddress + siteToronto + str(sitePageNum) + siteCategory)
-    print("URL added!")
     if page.status_code != 200 or sitePageNum >= lastPage:
         break
 print(allPages[lastPage - 1])
+print(len(allPages))
 
 if page.status_code == 200:
     print(page.status_code)
@@ -71,20 +72,36 @@ if page.status_code == 200:
     soup = BeautifulSoup(response.text, 'html.parser')
 
     allImageURLItems = soup.find_all('div', attrs={"class": "image"})
+    #extract price  WORK
     allPriceItems = soup.find_all('div', attrs={"class": "price"})
+    clearPriceItems = []
+    for item in allPriceItems:
+        clearItem = item.get_text(strip=True)
+        clearPriceItems.append(clearItem)
+    #extract description
     allDescriptionItems = soup.find_all('div', attrs={"class": "description"})
+    for item in allDescriptionItems:
+        pass
     allTitleItems = soup.find_all('div', attrs={"class": "title"})
-    allDateItems = soup.find_all('span', attrs={"class": "date-posted"})  # it works!!!
+    for item in allTitleItems:
+        pass
+    allDateItems = soup.find_all('span', attrs={"class": "date-posted"})
+    for item in allDateItems:
+        pass
     allBedsNumItems = soup.find_all('span', attrs={"class": "bedrooms"})
+    for item in allBedsNumItems:
+        pass
     allLocationItems = soup.find_all('div', attrs={"class": "location"})
+    for item in allLocationItems:
+        pass
 
-    print(allImageURLItems[5])
-    print(allPriceItems[5])
-    print(allDescriptionItems[5])
-    print(allTitleItems[5])
-    print(allDateItems[5])
-    print(allBedsNumItems[5])
-    print(allLocationItems[5])
+    #print(allImageURLItems[5])
+    print(clearPriceItems[5])
+    #print(allDescriptionItems[5])
+    #print(allTitleItems[5])
+    #print(allDateItems[5])
+    #print(allBedsNumItems[5])
+    #print(allLocationItems[5])
 
     # for data in allItems:
     #    if data.find('div', class_='left-col') is not None:
