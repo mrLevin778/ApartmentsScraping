@@ -1,15 +1,10 @@
-from typing import Any
-
 import requests
-import lxml
 from bs4 import BeautifulSoup
-from bs4.element import ResultSet
 
 siteAddress = "https://www.kijiji.ca"
 siteToronto = "/b-apartments-condos/city-of-toronto/page-"
 siteCategory = "/c37l1700273"
 sitePageNum = 0
-siteURL = siteAddress + siteToronto + str(sitePageNum) + siteCategory
 
 
 # <a href="/b-apartments-condos/city-of-toronto/page-2/c37l1700273">2</a> - pages
@@ -24,14 +19,14 @@ class Apartment:
     bedsNum = str
     location = str
 
-    def __init__(self, imageURL, price, description, title,
-                 date, bedsNum, location):
-        self.imageURL = imageURL
+    def __init__(self, imageurl, price, description, title,
+                 date, bedsnum, location):
+        self.imageURL = imageurl
         self.price = price
         self.description = description
         self.title = title
         self.date = date
-        self.bedsNum = bedsNum
+        self.bedsNum = bedsnum
         self.location = location
 
     def __repr__(self):
@@ -51,10 +46,11 @@ headers = {
     'accept-language': 'en-US,en;q=0.9',
 }
 
-allPages = []
-lastPage = 94
+allPages = []  # list of all pages
+lastPage = 94  # temporary variable
 
 page = requests.get(siteAddress + siteToronto + str(sitePageNum) + siteCategory)
+# extract number of pages, now it's don't work :(
 while True:
     sitePageNum += 1
     allPages.append(siteAddress + siteToronto + str(sitePageNum) + siteCategory)
@@ -67,21 +63,24 @@ if page.status_code == 200:
     print(page.status_code)
     print(f'Connection Open!')
     session = requests.session()
+    siteURL = siteAddress + siteToronto + str(sitePageNum) + siteCategory
     response = session.get(siteURL, headers=headers)
 
     soup = BeautifulSoup(response.text, 'html.parser')
 
     allImageURLItems = soup.find_all('div', attrs={"class": "image"})
-    #extract price  WORK
+    # extract price  WORK
     allPriceItems = soup.find_all('div', attrs={"class": "price"})
     clearPriceItems = []
     for item in allPriceItems:
         clearItem = item.get_text(strip=True)
         clearPriceItems.append(clearItem)
-    #extract description
+    # extract description WORK
     allDescriptionItems = soup.find_all('div', attrs={"class": "description"})
+    clearDescriptionItems = []
     for item in allDescriptionItems:
-        pass
+        clearItem = item.get_text(strip=True)
+        clearDescriptionItems.append(clearItem)
     allTitleItems = soup.find_all('div', attrs={"class": "title"})
     for item in allTitleItems:
         pass
@@ -95,13 +94,13 @@ if page.status_code == 200:
     for item in allLocationItems:
         pass
 
-    #print(allImageURLItems[5])
+    # print(allImageURLItems[5])
     print(clearPriceItems[5])
-    #print(allDescriptionItems[5])
-    #print(allTitleItems[5])
-    #print(allDateItems[5])
-    #print(allBedsNumItems[5])
-    #print(allLocationItems[5])
+    print(clearDescriptionItems[5])
+    # print(allTitleItems[5])
+    # print(allDateItems[5])
+    # print(allBedsNumItems[5])
+    # print(allLocationItems[5])
 
     # for data in allItems:
     #    if data.find('div', class_='left-col') is not None:
@@ -116,7 +115,7 @@ if page.status_code == 200:
     # bedsNum = element.find('span', class_='bedrooms').text.strip()
     # location = element.find('div', class_='location').text.strip()
 
-    # apart = Apartment(imageURL, price, description, title, date, bedsNum, location)
+    # apart = Apartment(imageurl, price, description, title, date, bedsnum, location)
 
     # print(apart.__repr__())
 else:
