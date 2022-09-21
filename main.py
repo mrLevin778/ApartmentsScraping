@@ -59,6 +59,14 @@ while True:
 print(allPages[lastPage - 1])
 print(len(allPages))
 
+def extractTextFromTags(allItemsWithTag):
+    allItemsClearText = []
+    for item in allItemsWithTag:
+        clearItem = item.get_text(strip=True)
+        allItemsClearText.append(clearItem)
+    return allItemsClearText
+
+
 if page.status_code == 200:
     print(page.status_code)
     print(f'Connection Open!')
@@ -69,24 +77,19 @@ if page.status_code == 200:
     soup = BeautifulSoup(response.text, 'html.parser')
 
     allImageURLItems = soup.find_all('div', attrs={"class": "image"})
+
     # extract price  WORK
     allPriceItems = soup.find_all('div', attrs={"class": "price"})
-    clearPriceItems = []
-    for item in allPriceItems:
-        clearItem = item.get_text(strip=True)
-        clearPriceItems.append(clearItem)
+    clearPriceItems = extractTextFromTags(allPriceItems)
+
     # extract description WORK
     allDescriptionItems = soup.find_all('div', attrs={"class": "description"})
-    clearDescriptionItems = []
-    for item in allDescriptionItems:
-        clearItem = item.get_text(strip=True)
-        clearDescriptionItems.append(clearItem)
+    clearDescriptionItems = extractTextFromTags(allDescriptionItems)
+
     # extract title WORK
     allTitleItems = soup.find_all('div', attrs={"class": "title"})
-    clearTitleItems = []
-    for item in allTitleItems:
-        clearItem = item.get_text(strip=True)
-        clearTitleItems.append(clearItem)
+    clearTitleItems = extractTextFromTags(allTitleItems)
+
     allDateItems = soup.find_all('span', attrs={"class": "date-posted"})
     for item in allDateItems:
         pass
@@ -99,7 +102,7 @@ if page.status_code == 200:
 
     # print(allImageURLItems[5])
     print(f'Price: ' + clearPriceItems[5])
-    print(f'Description: '+ clearDescriptionItems[5])
+    print(f'Description: ' + clearDescriptionItems[5])
     print(f'Title: ' + clearTitleItems[5])
     # print(allDateItems[5])
     # print(allBedsNumItems[5])
