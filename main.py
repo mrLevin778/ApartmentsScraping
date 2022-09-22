@@ -2,14 +2,14 @@ from datetime import datetime, timedelta
 import requests
 from bs4 import BeautifulSoup
 
-
 siteAddress = "https://www.kijiji.ca"
 siteToronto = "/b-apartments-condos/city-of-toronto/page-"
 siteCategory = "/c37l1700273"
 sitePageNum = 0
 allPages = []  # list of all pages
-lastPage = 90  # temporary variable
-elementId = 0
+lastPage = 37  # temporary variable
+elementId = 2
+
 
 # function for get dates(today and yesterday)
 def get_dates(day):
@@ -51,16 +51,16 @@ page = requests.get(siteAddress + siteToronto + str(sitePageNum) + siteCategory)
 while True:
     sitePageNum += 1
     allPages.append(siteAddress + siteToronto + str(sitePageNum) + siteCategory)
-    if page.status_code != 200 or sitePageNum >= lastPage:
+    if sitePageNum >= lastPage:
         break
 # print(allPages[lastPage - 1])
 print(len(allPages))
-
 
 if page.status_code == 200:
     print(f'Connection Open! Status Code: ' + str(page.status_code))
     session = requests.session()
     siteURL = siteAddress + siteToronto + str(sitePageNum) + siteCategory
+    print(f'Site url: ' + str(siteURL))
     response = session.get(siteURL, headers=headers)
 
     soup = BeautifulSoup(response.text, 'html.parser')
@@ -89,7 +89,6 @@ if page.status_code == 200:
                 clearItem = ''
                 clearItem += str(clearItemTemp[item])
         clearBedsNumItems.append(clearItem)
-
 
     # extract location
     allLocationItems = soup.find_all('div', attrs={"class": "location"})
@@ -127,15 +126,18 @@ if page.status_code == 200:
     for i in allImageURLItems:
         i = str(i)
         soup = BeautifulSoup(i, 'html.parser')
+        images = []
         images = soup.find_all('img')
         for image in images:
-            imageURL = image['data-src']
-        clearImageURLItems.append(imageURL)
-
+            try:
+                imageURL = image['data-src']
+            except:
+                imageURL = image['src']
+            clearImageURLItems.append(imageURL)
 
     print(f'Items on page: ' + str(len(clearPriceItems)))
 
-    print(f'Image URL: ' + clearImageURLItems[elementId])
+    print(f'Image URL: ' + str(clearImageURLItems[elementId]))
     print(f'Price: ' + clearPriceItems[elementId])
     print(f'Description: ' + clearDescriptionItems[elementId])
     print(f'Title: ' + clearTitleItems[elementId])
@@ -150,5 +152,3 @@ if page.status_code == 200:
     # print(apart.__repr__())
 else:
     print('Connection Error or end of pages!')
-
-# temp area!!!!!!!
