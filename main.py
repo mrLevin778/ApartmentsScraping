@@ -50,13 +50,13 @@ class Apartment(DeclarativeBase):
     price = Column('price', String)
 
     def __repr__(self):
-        return "".format(self.code)
+        return "".format()
 
 
 # create Postgres engine
 engine = sqlalchemy.create_engine("postgresql+psycopg2://postgres:password@localhost/postgres")
 engine.connect()
-print(engine)
+
 DeclarativeBase.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)
@@ -65,16 +65,9 @@ session = Session()
 
 print(f'Session with Postgres is open!')
 
-# new_apartment = Apartment(imageURL='URL',
-#                            title='Title',
-#                            date='09-10-2022',
-#                            location='LA',
-#                            bedrooms='4',
-#                            description='Some text',
-#                            price='500')
-# session.add(new_apartment)
+#session.add(new_apartment)
 
-# session.commit()
+#session.commit()
 
 for item in session.query(Apartment):
     print(item)
@@ -249,3 +242,45 @@ print(f'Beds num: ' + str(len(bedrooms_items)))
 print(f'Title num: ' + str(len(title_items)))
 print(f'Location num: ' + str(len(location_items)))
 print(f'Date num: ' + str(len(date_items)))
+
+# add items to Postgres--------------------------------------------------
+
+#new_apartment = Apartment(imageURL='imageURL',
+#                            title='Title',
+#                            date='09-10-2022',
+#                            location='LA',
+#                            bedrooms='4',
+#                            description='Some text',
+#                            price='500')
+
+while True:
+    for i in image_url_items:
+        new_apartment = Apartment(imageURL=i)
+        session.add(new_apartment)
+        session.commit()
+    for i in title_items:
+        new_apartment = Apartment(title=i)
+        session.add(new_apartment)
+        session.commit()
+    for i in date_items:
+        new_apartment = Apartment(date=i)
+        session.add(new_apartment)
+        session.commit()
+    for i in location_items:
+        new_apartment = Apartment(location=i)
+        session.add(new_apartment)
+        session.commit()
+    for i in bedrooms_items:
+        new_apartment = Apartment(bedrooms=i)
+        session.add(new_apartment)
+        session.commit()
+    for i in description_items:
+        new_apartment = Apartment(description=i)
+        session.add(new_apartment)
+        session.commit()
+    for i in price_items:
+        new_apartment = Apartment(price=i)
+        session.add(new_apartment)
+        session.commit()
+
+print(f'----------------Completed----------------')
