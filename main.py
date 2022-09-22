@@ -8,8 +8,8 @@ siteToronto = "/b-apartments-condos/city-of-toronto/page-"
 siteCategory = "/c37l1700273"
 sitePageNum = 0
 allPages = []  # list of all pages
-lastPage = 94  # temporary variable
-elementId = 2
+lastPage = 90  # temporary variable
+elementId = 0
 
 # function for get dates(today and yesterday)
 def get_dates(day):
@@ -23,11 +23,11 @@ def get_dates(day):
         return yesterday
 
 
-# function for extracting text from text
+# function for extracting text from tags
 def extractTextFromTags(allItemsWithTag):
     allItemsClearText = []
-    for item in allItemsWithTag:
-        clearItem = item.get_text(strip=True)
+    for i in allItemsWithTag:
+        clearItem = i.get_text(strip=True)
         allItemsClearText.append(clearItem)
     return allItemsClearText
 
@@ -77,9 +77,6 @@ if page.status_code == 200:
     allTitleItems = soup.find_all('div', attrs={"class": "title"})
     clearTitleItems = extractTextFromTags(allTitleItems)
 
-    # extract image URL
-    allImageURLItems = soup.find_all('div', attrs={"class": "image"})
-
     # extract number of bedrooms
     allBedsNumItems = soup.find_all('span', attrs={"class": "bedrooms"})
     clearBedsNumItemsTemp = extractTextFromTags(allBedsNumItems)
@@ -124,9 +121,21 @@ if page.status_code == 200:
             clearItem = clearItem.replace('/', '-')
         clearDateItems.append(clearItem)
 
-    print(f'Items on page: ' + str(len(clearDateItems)))
+    # extract image URL
+    allImageURLItems = soup.find_all('div', attrs={"class": "image"})
+    clearImageURLItems = []
+    for i in allImageURLItems:
+        i = str(i)
+        soup = BeautifulSoup(i, 'html.parser')
+        images = soup.find_all('img')
+        for image in images:
+            imageURL = image['data-src']
+        clearImageURLItems.append(imageURL)
 
-    # print(allImageURLItems[5])
+
+    print(f'Items on page: ' + str(len(clearPriceItems)))
+
+    print(f'Image URL: ' + clearImageURLItems[elementId])
     print(f'Price: ' + clearPriceItems[elementId])
     print(f'Description: ' + clearDescriptionItems[elementId])
     print(f'Title: ' + clearTitleItems[elementId])
