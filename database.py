@@ -16,6 +16,7 @@ DATABASE = {
     'database': 'apartments'
 }
 
+
 DeclarativeBase = declarative_base()
 
 
