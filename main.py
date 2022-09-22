@@ -1,14 +1,25 @@
 from datetime import datetime, timedelta
 import requests
+import urllib3.exceptions
 from bs4 import BeautifulSoup
 
 siteAddress = "https://www.kijiji.ca"
 siteToronto = "/b-apartments-condos/city-of-toronto/page-"
-siteCategory = "/c37l1700273"
-sitePageNum = 0
+siteCategory = "/c37l1700273?ad=offering"
+sitePageNum = 83
+site_first_page = 'https://www.kijiji.ca/b-apartments-condos/city-of-toronto/c37l1700273?ad=offering'
 allPages = []  # list of all pages
-lastPage = 37  # temporary variable
-elementId = 2  # test element
+elementId = 0  # test element
+
+
+# lists for data from all pages
+image_url_items = []
+title_items = []
+date_items = []
+location_items = []
+bedrooms_items = []
+description_items = []
+price_items = []
 
 
 # function for get dates(today and yesterday)
@@ -47,107 +58,113 @@ headers = {
 
 page = requests.get(siteAddress + siteToronto + str(sitePageNum) + siteCategory)
 
-# extract number of pages, now it's don't work :(
+
+# main function
 while True:
+    is_last_page = False
     sitePageNum += 1
-    allPages.append(siteAddress + siteToronto + str(sitePageNum) + siteCategory)
-    if sitePageNum >= lastPage:
-        break
-# print(allPages[lastPage - 1])
-print(len(allPages))
+    #allPages.append(siteAddress + siteToronto + str(sitePageNum) + siteCategory)
+    #if siteURL == exact_url:
+    #    break
+    #print(allPages)
+    #print(len(allPages))
 
-if page.status_code == 200:
-    print(f'Connection Open! Status Code: ' + str(page.status_code))
-    session = requests.session()
-    siteURL = siteAddress + siteToronto + str(sitePageNum) + siteCategory
-    print(f'Page url: ' + str(siteURL))
-    response = session.get(siteURL, headers=headers)
+    if page.status_code == 200:
+        print(f'Connection Open! Status Code: ' + str(page.status_code))
+        session = requests.session()
+        siteURL = siteAddress + siteToronto + str(sitePageNum) + siteCategory
 
-    soup = BeautifulSoup(response.text, 'html.parser')
+        response = session.get(siteURL, headers=headers)
+        exact_url = response.url
+        print(f'Exact URL: ' + response.url)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        print(f'Page url: ' + str(siteURL))
+        if siteURL != exact_url and exact_url != site_first_page:
+            is_last_page = True
+        print(f'Flag: ' + str(is_last_page))
 
-    # extract price
-    allPriceItems = soup.find_all('div', attrs={"class": "price"})
-    clearPriceItems = extractTextFromTags(allPriceItems)
+        # extract price
+        allPriceItems = soup.find_all('div', attrs={"class": "price"})
+        clearPriceItems = extractTextFromTags(allPriceItems)
 
-    # extract description
-    allDescriptionItems = soup.find_all('div', attrs={"class": "description"})
-    clearDescriptionItems = extractTextFromTags(allDescriptionItems)
+        # extract description
+        allDescriptionItems = soup.find_all('div', attrs={"class": "description"})
+        clearDescriptionItems = extractTextFromTags(allDescriptionItems)
 
-    # extract title
-    allTitleItems = soup.find_all('div', attrs={"class": "title"})
-    clearTitleItems = extractTextFromTags(allTitleItems)
+        # extract title
+        allTitleItems = soup.find_all('div', attrs={"class": "title"})
+        clearTitleItems = extractTextFromTags(allTitleItems)
 
-    # extract number of bedrooms
-    allBedsNumItems = soup.find_all('span', attrs={"class": "bedrooms"})
-    clearBedsNumItemsTemp = extractTextFromTags(allBedsNumItems)
-    clearBedsNumItems = []
-    for item in clearBedsNumItemsTemp:
-        clearItemTemp = (item[5:])
-        clearItem = ''
-        for item in range(len(clearItemTemp)):
-            if clearItemTemp[item].isdigit():
-                clearItem = ''
-                clearItem += str(clearItemTemp[item])
-        clearBedsNumItems.append(clearItem)
+        # extract number of bedrooms
+        allBedsNumItems = soup.find_all('span', attrs={"class": "bedrooms"})
+        clearBedsNumItemsTemp = extractTextFromTags(allBedsNumItems)
+        clearBedsNumItems = []
+        for item in clearBedsNumItemsTemp:
+            clearItemTemp = (item[5:])
+            clearItem = ''
+            for item in range(len(clearItemTemp)):
+                if clearItemTemp[item].isdigit():
+                    clearItem = ''
+                    clearItem += str(clearItemTemp[item])
+            clearBedsNumItems.append(clearItem)
 
-    # extract location
-    allLocationItems = soup.find_all('div', attrs={"class": "location"})
-    clearLocationItemsTemp = extractTextFromTags(allLocationItems)
-    clearLocationItems = []
-    for item in clearLocationItemsTemp:
-        if item.endswith('Yesterday'):
-            clearLocationItem = (item[:-9])
-        elif item.endswith('hours ago'):
-            clearLocationItem = (item[:-12])
-        elif item.endswith('minutes ago'):
-            clearLocationItem = (item[:-14])
-        else:
-            clearLocationItem = (item[:-10])
-        clearLocationItems.append(clearLocationItem)
+        # extract location
+        allLocationItems = soup.find_all('div', attrs={"class": "location"})
+        clearLocationItemsTemp = extractTextFromTags(allLocationItems)
+        clearLocationItems = []
+        for item in clearLocationItemsTemp:
+            if item.endswith('Yesterday'):
+                clearLocationItem = (item[:-9])
+            elif item.endswith('hours ago'):
+                clearLocationItem = (item[:-12])
+            elif item.endswith('minutes ago'):
+                clearLocationItem = (item[:-14])
+            else:
+                clearLocationItem = (item[:-10])
+            clearLocationItems.append(clearLocationItem)
 
-    # alternate extract date
-    clearDateItems = []
-    for item in clearLocationItemsTemp:
-        clearItem = (item[-10:])
-        # print(f'date: ' + clearItem)
-        yesterday = 'y'
-        today = 't'
-        if clearItem.endswith('Yesterday'):
-            clearItem = get_dates(yesterday)
-        elif clearItem.endswith(' ago'):
-            clearItem = get_dates(today)
-        else:
-            clearItem = clearItem.replace('/', '-')
-        clearDateItems.append(clearItem)
+        # alternate extract date
+        clearDateItems = []
+        for item in clearLocationItemsTemp:
+            clearItem = (item[-10:])
+            yesterday = 'y'
+            today = 't'
+            if clearItem.endswith('Yesterday'):
+                clearItem = get_dates(yesterday)
+            elif clearItem.endswith(' ago'):
+                clearItem = get_dates(today)
+            else:
+                clearItem = clearItem.replace('/', '-')
+            clearDateItems.append(clearItem)
 
-    # extract image URL
-    allImageURLItems = soup.find_all('div', attrs={"class": "image"})
-    clearImageURLItems = []
-    for i in allImageURLItems:
-        i = str(i)
-        soup = BeautifulSoup(i, 'html.parser')
-        images = soup.find_all('img')
-        for image in images:
-            try:
-                imageURL = image['data-src']
-            except:
-                imageURL = image['src']
-            clearImageURLItems.append(imageURL)
+        # extract image URL
+        allImageURLItems = soup.find_all('div', attrs={"class": "image"})
+        clearImageURLItems = []
+        for i in allImageURLItems:
+            i = str(i)
+            soup = BeautifulSoup(i, 'html.parser')
+            images = soup.find_all('img')
+            for image in images:
+                try:
+                    imageURL = image['data-src']
+                except:
+                    imageURL = image['src']
+                clearImageURLItems.append(imageURL)
 
-    print(f'Items on page: ' + str(len(clearPriceItems)))
+        print(f'Items on page: ' + str(len(clearBedsNumItems)))
 
-    print(f'Image URL: ' + str(clearImageURLItems[elementId]))
-    print(f'Price: ' + clearPriceItems[elementId])
-    print(f'Description: ' + clearDescriptionItems[elementId])
-    print(f'Title: ' + clearTitleItems[elementId])
-    print(f'Date: ' + clearDateItems[elementId])
-    print(f'Bedrooms: ' + clearBedsNumItems[elementId])
-    print(f'Location: ' + clearLocationItems[elementId])
+        print(f'Image URL: ' + str(clearImageURLItems[elementId]))
+        print(f'Price: ' + clearPriceItems[elementId])
+        print(f'Description: ' + clearDescriptionItems[elementId])
+        print(f'Title: ' + clearTitleItems[elementId])
+        print(f'Date: ' + clearDateItems[elementId])
+        print(f'Bedrooms: ' + clearBedsNumItems[elementId])
+        print(f'Location: ' + clearLocationItems[elementId])
 
-    # for element in soup.find_all('div', class_='clearfix'):
+        # for element in soup.find_all('div', class_='clearfix'):
 
-    # apart = Apartment(imageurl, price, description, title, date, bedsnum, location)
+        # apart = Apartment(imageurl, price, description, title, date, bedsnum, location)
 
-    # print(apart.__repr__())
-else:
-    print('Connection Error or end of pages!')
+        # print(apart.__repr__())
+    else:
+        print('Connection Error or end of pages!')
