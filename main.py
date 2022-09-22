@@ -1,17 +1,27 @@
 from datetime import datetime, timedelta
 import requests
+import time
+
+import sqlalchemy
 import urllib3.exceptions
 from bs4 import BeautifulSoup
+
+# imports for db
+from sqlalchemy import Column, ForeignKey, Integer, String, Text, Date, DateTime, create_engine
+from sqlalchemy.engine.url import URL
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+import psycopg2
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 siteAddress = "https://www.kijiji.ca"
 siteToronto = "/b-apartments-condos/city-of-toronto/page-"
 siteCategory = "/c37l1700273?ad=offering"
-sitePageNum = 83
+sitePageNum = 0
 site_first_page = 'https://www.kijiji.ca/b-apartments-condos/city-of-toronto/c37l1700273?ad=offering'
 allPages = []  # list of all pages
 elementId = 0  # test element
 is_last_page = True
-
 
 # lists for data from all pages
 image_url_items = []
@@ -22,6 +32,55 @@ bedrooms_items = []
 description_items = []
 price_items = []
 
+# db area------------------------------------------------------------------------------
+
+DeclarativeBase = declarative_base()
+
+
+class Apartment(DeclarativeBase):
+    __tablename__ = 'apartment'
+
+    id = Column(Integer, unique=True, primary_key=True, autoincrement=True)
+    imageURL = Column('imageURL', String)
+    title = Column('title', String)
+    date = Column('date', String)
+    location = Column('location', String)
+    bedrooms = Column('bedrooms', String)
+    description = Column('description', String)
+    price = Column('price', String)
+
+    def __repr__(self):
+        return "".format(self.code)
+
+
+# create Postgres engine
+engine = sqlalchemy.create_engine("postgresql+psycopg2://postgres:password@localhost/postgres")
+engine.connect()
+print(engine)
+DeclarativeBase.metadata.create_all(engine)
+
+Session = sessionmaker(bind=engine)
+
+session = Session()
+
+print(f'Session with Postgres is open!')
+
+# new_apartment = Apartment(imageURL='URL',
+#                            title='Title',
+#                            date='09-10-2022',
+#                            location='LA',
+#                            bedrooms='4',
+#                            description='Some text',
+#                            price='500')
+# session.add(new_apartment)
+
+# session.commit()
+
+for item in session.query(Apartment):
+    print(item)
+
+
+# db area------------------------------------------------------------------------------
 
 # function for get dates(today and yesterday)
 def get_dates(day):
@@ -59,22 +118,23 @@ headers = {
 
 page = requests.get(siteAddress + siteToronto + str(sitePageNum) + siteCategory)
 
-
 # main function
 while is_last_page == True:
     sitePageNum += 1
-    #allPages.append(siteAddress + siteToronto + str(sitePageNum) + siteCategory)
-    #if siteURL == exact_url:
+    # allPages.append(siteAddress + siteToronto + str(sitePageNum) + siteCategory)
+    # if siteURL == exact_url:
     #    break
-    #print(allPages)
-    #print(len(allPages))
+    # print(allPages)
+    # print(len(allPages))
 
     if page.status_code == 200:
         print(f'Connection Open! Status Code: ' + str(page.status_code))
-        session = requests.session()
-        siteURL = siteAddress + siteToronto + str(sitePageNum) + siteCategory
-
-        response = session.get(siteURL, headers=headers)
+        try:
+            session = requests.session()
+            siteURL = siteAddress + siteToronto + str(sitePageNum) + siteCategory
+            response = session.get(siteURL, headers=headers)
+        except:
+            continue
         exact_url = response.url
         print(f'Exact URL: ' + response.url)
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -181,4 +241,11 @@ while is_last_page == True:
         print(f'Server Error!')
     else:
         print('Some Connection Error!')
-print(f'Items num: ' + str(len(image_url_items)))
+    time.sleep(3)
+print(f'Images num: ' + str(len(image_url_items)))
+print(f'Price num: ' + str(len(price_items)))
+print(f'Description num: ' + str(len(description_items)))
+print(f'Beds num: ' + str(len(bedrooms_items)))
+print(f'Title num: ' + str(len(title_items)))
+print(f'Location num: ' + str(len(location_items)))
+print(f'Date num: ' + str(len(date_items)))
