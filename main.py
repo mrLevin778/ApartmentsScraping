@@ -8,7 +8,7 @@ siteCategory = "/c37l1700273"
 sitePageNum = 0
 allPages = []  # list of all pages
 lastPage = 37  # temporary variable
-elementId = 2
+elementId = 2  # test element
 
 
 # function for get dates(today and yesterday)
@@ -60,7 +60,7 @@ if page.status_code == 200:
     print(f'Connection Open! Status Code: ' + str(page.status_code))
     session = requests.session()
     siteURL = siteAddress + siteToronto + str(sitePageNum) + siteCategory
-    print(f'Site url: ' + str(siteURL))
+    print(f'Page url: ' + str(siteURL))
     response = session.get(siteURL, headers=headers)
 
     soup = BeautifulSoup(response.text, 'html.parser')
@@ -126,7 +126,6 @@ if page.status_code == 200:
     for i in allImageURLItems:
         i = str(i)
         soup = BeautifulSoup(i, 'html.parser')
-        images = []
         images = soup.find_all('img')
         for image in images:
             try:
