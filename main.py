@@ -134,8 +134,6 @@ while is_last_page == True:
                     if clear_item_temp[item].isdigit():
                         clear_item = ''
                         clear_item += str(clear_item_temp[item])
-                        if clear_item == '':
-                            clear_item = 'Not specified'
                 clear_beds_num_items.append(clear_item)
 
             # extract location
