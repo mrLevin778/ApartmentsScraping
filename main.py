@@ -12,7 +12,7 @@ from sqlalchemy.orm import sessionmaker
 site_address = "https://www.kijiji.ca"
 site_toronto = "/b-apartments-condos/city-of-toronto/page-"
 site_category = "/c37l1700273?ad=offering"
-site_page_num = 84  # AFTER TESTS CHANGE TO ZERO!!!
+site_page_num = 0
 site_first_page = 'https://www.kijiji.ca/b-apartments-condos/city-of-toronto/c37l1700273?ad=offering'
 is_last_page = True
 
@@ -100,8 +100,8 @@ while is_last_page == True:
             session = requests.session()
             site_url = site_address + site_toronto + str(site_page_num) + site_category
             response = session.get(site_url, headers=headers)
-        except requests.exceptions.ChunkedEncodingError:
-            print(f'Exception!')
+        except:
+            print(f'Exception! Please, run script again')
             continue
         exact_url = response.url
         # print(f'Exact URL: ' + response.url)
@@ -183,8 +183,6 @@ while is_last_page == True:
                         image_url = image['src']
                     clear_image_url_items.append(image_url)
 
-            print(f'Items on page: ' + str(len(clear_beds_num_items)))
-
             # get elements from pages and add into common list
             for i in clear_image_url_items:
                 image_url_items.append(i)
@@ -205,17 +203,9 @@ while is_last_page == True:
         print(f'Server Error!')
     else:
         print('Some Connection Error!')
-    time.sleep(3)
-print(f'Images num: ' + str(len(image_url_items)))
-print(f'Price num: ' + str(len(price_items)))
-print(f'Description num: ' + str(len(description_items)))
-print(f'Beds num: ' + str(len(bedrooms_items)))
-print(f'Title num: ' + str(len(title_items)))
-print(f'Location num: ' + str(len(location_items)))
-print(f'Date num: ' + str(len(date_items)))
+    time.sleep(5)
 
 # add items to Postgres--------------------------------------------------
-
 session = Session()
 # with loop add data to Postgres
 for image_url, title, date, location, bedrooms, description, price in zip(image_url_items,
