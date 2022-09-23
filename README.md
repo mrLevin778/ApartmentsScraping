@@ -11,4 +11,4 @@
  
    - PostgreSQL 14.5
   
- Used PyCharm CE
+ Used PyCharm CE with venv
