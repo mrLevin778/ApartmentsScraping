@@ -1,26 +1,19 @@
 from datetime import datetime, timedelta
 import requests
 import time
-
-import sqlalchemy
-import urllib3.exceptions
 from bs4 import BeautifulSoup
 
 # imports for db
-from sqlalchemy import Column, ForeignKey, Integer, String, Text, Date, DateTime, create_engine
-from sqlalchemy.engine.url import URL
+import sqlalchemy
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-import psycopg2
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
-siteAddress = "https://www.kijiji.ca"
-siteToronto = "/b-apartments-condos/city-of-toronto/page-"
-siteCategory = "/c37l1700273?ad=offering"
-sitePageNum = 84
+site_address = "https://www.kijiji.ca"
+site_toronto = "/b-apartments-condos/city-of-toronto/page-"
+site_category = "/c37l1700273?ad=offering"
+site_page_num = 84  # AFTER TESTS CHANGE TO ZERO!!!
 site_first_page = 'https://www.kijiji.ca/b-apartments-condos/city-of-toronto/c37l1700273?ad=offering'
-allPages = []  # list of all pages
-elementId = 0  # test element
 is_last_page = True
 
 # lists for data from all pages
@@ -32,7 +25,7 @@ bedrooms_items = []
 description_items = []
 price_items = []
 
-# db area------------------------------------------------------------------------------
+print(f'App is RUN')
 
 DeclarativeBase = declarative_base()
 
@@ -61,15 +54,6 @@ DeclarativeBase.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)
 
-# session = Session()
-
-print(f'Session with Postgres is open!')
-
-#for item in session.query(Apartment):
-#    print(item)
-
-
-# db area------------------------------------------------------------------------------
 
 # function for get dates(today and yesterday)
 def get_dates(day):
@@ -84,12 +68,12 @@ def get_dates(day):
 
 
 # function for extracting text from tags
-def extractTextFromTags(allItemsWithTag):
-    allItemsClearText = []
-    for i in allItemsWithTag:
-        clearItem = i.get_text(strip=True)
-        allItemsClearText.append(clearItem)
-    return allItemsClearText
+def extract_text_from_tags(all_items_with_tag):
+    all_items_clear_text = []
+    for i in all_items_with_tag:
+        clear_item = i.get_text(strip=True)
+        all_items_clear_text.append(clear_item)
+    return all_items_clear_text
 
 
 headers = {
@@ -105,125 +89,113 @@ headers = {
     'accept-language': 'en-US,en;q=0.9',
 }
 
-page = requests.get(siteAddress + siteToronto + str(sitePageNum) + siteCategory)
+page = requests.get(site_address + site_toronto + str(site_page_num) + site_category)
 
-# main function
+# main function for data scraping
 while is_last_page == True:
-    sitePageNum += 1
-    # allPages.append(siteAddress + siteToronto + str(sitePageNum) + siteCategory)
-    # if siteURL == exact_url:
-    #    break
-    # print(allPages)
-    # print(len(allPages))
+    site_page_num += 1
 
     if page.status_code == 200:
-        print(f'Connection Open! Status Code: ' + str(page.status_code))
         try:
             session = requests.session()
-            siteURL = siteAddress + siteToronto + str(sitePageNum) + siteCategory
-            response = session.get(siteURL, headers=headers)
-        except:
+            site_url = site_address + site_toronto + str(site_page_num) + site_category
+            response = session.get(site_url, headers=headers)
+        except requests.exceptions.ChunkedEncodingError:
+            print(f'Exception!')
             continue
         exact_url = response.url
-        print(f'Exact URL: ' + response.url)
+        # print(f'Exact URL: ' + response.url)
         soup = BeautifulSoup(response.text, 'html.parser')
-        print(f'Page url: ' + str(siteURL))
-        if siteURL != exact_url and exact_url != site_first_page:
+        # print(f'Page url: ' + str(siteURL))
+        if site_url != exact_url and exact_url != site_first_page:
             is_last_page = False
         else:
             print(f'Flag: ' + str(is_last_page))
 
             # extract price
-            allPriceItems = soup.find_all('div', attrs={"class": "price"})
-            clearPriceItems = extractTextFromTags(allPriceItems)
+            all_price_items = soup.find_all('div', attrs={"class": "price"})
+            clear_price_items = extract_text_from_tags(all_price_items)
 
             # extract description
-            allDescriptionItems = soup.find_all('div', attrs={"class": "description"})
-            clearDescriptionItems = extractTextFromTags(allDescriptionItems)
+            all_description_items = soup.find_all('div', attrs={"class": "description"})
+            clear_description_items = extract_text_from_tags(all_description_items)
 
             # extract title
-            allTitleItems = soup.find_all('div', attrs={"class": "title"})
-            clearTitleItems = extractTextFromTags(allTitleItems)
+            all_title_items = soup.find_all('div', attrs={"class": "title"})
+            clear_title_items = extract_text_from_tags(all_title_items)
 
             # extract number of bedrooms
-            allBedsNumItems = soup.find_all('span', attrs={"class": "bedrooms"})
-            clearBedsNumItemsTemp = extractTextFromTags(allBedsNumItems)
-            clearBedsNumItems = []
-            for item in clearBedsNumItemsTemp:
-                clearItemTemp = (item[5:])
-                clearItem = ''
-                for item in range(len(clearItemTemp)):
-                    if clearItemTemp[item].isdigit():
-                        clearItem = ''
-                        clearItem += str(clearItemTemp[item])
-                clearBedsNumItems.append(clearItem)
+            all_beds_num_items = soup.find_all('span', attrs={"class": "bedrooms"})
+            clear_beds_num_items_temp = extract_text_from_tags(all_beds_num_items)
+            clear_beds_num_items = []
+            for item in clear_beds_num_items_temp:
+                clear_item_temp = (item[5:])
+                clear_item = ''
+                for item in range(len(clear_item_temp)):
+                    if clear_item_temp[item].isdigit():
+                        clear_item = ''
+                        clear_item += str(clear_item_temp[item])
+                clear_beds_num_items.append(clear_item)
 
             # extract location
-            allLocationItems = soup.find_all('div', attrs={"class": "location"})
-            clearLocationItemsTemp = extractTextFromTags(allLocationItems)
-            clearLocationItems = []
-            for item in clearLocationItemsTemp:
+            all_location_items = soup.find_all('div', attrs={"class": "location"})
+            clear_location_items_temp = extract_text_from_tags(all_location_items)
+            clear_location_items = []
+            for item in clear_location_items_temp:
                 if item.endswith('Yesterday'):
-                    clearLocationItem = (item[:-9])
+                    clear_location_item = (item[:-9])
                 elif item.endswith('hours ago'):
-                    clearLocationItem = (item[:-12])
+                    clear_location_item = (item[:-12])
                 elif item.endswith('minutes ago'):
-                    clearLocationItem = (item[:-14])
+                    clear_location_item = (item[:-14])
                 else:
-                    clearLocationItem = (item[:-10])
-                clearLocationItems.append(clearLocationItem)
+                    clear_location_item = (item[:-10])
+                clear_location_items.append(clear_location_item)
 
             # alternate extract date
-            clearDateItems = []
-            for item in clearLocationItemsTemp:
-                clearItem = (item[-10:])
+            clear_date_items = []
+            for item in clear_location_items_temp:
+                clear_item = (item[-10:])
                 yesterday = 'y'
                 today = 't'
-                if clearItem.endswith('Yesterday'):
-                    clearItem = get_dates(yesterday)
-                elif clearItem.endswith(' ago'):
-                    clearItem = get_dates(today)
+                if clear_item.endswith('Yesterday'):
+                    clear_item = get_dates(yesterday)
+                elif clear_item.endswith(' ago'):
+                    clear_item = get_dates(today)
                 else:
-                    clearItem = clearItem.replace('/', '-')
-                clearDateItems.append(clearItem)
+                    clear_item = clear_item.replace('/', '-')
+                clear_date_items.append(clear_item)
 
             # extract image URL
-            allImageURLItems = soup.find_all('div', attrs={"class": "image"})
-            clearImageURLItems = []
-            for i in allImageURLItems:
+            all_image_url_items = soup.find_all('div', attrs={"class": "image"})
+            clear_image_url_items = []
+            for i in all_image_url_items:
                 i = str(i)
                 soup = BeautifulSoup(i, 'html.parser')
                 images = soup.find_all('img')
                 for image in images:
                     try:
-                        imageURL = image['data-src']
+                        image_url = image['data-src']
                     except:
-                        imageURL = image['src']
-                    clearImageURLItems.append(imageURL)
+                        image_url = image['src']
+                    clear_image_url_items.append(image_url)
 
-            print(f'Items on page: ' + str(len(clearBedsNumItems)))
+            print(f'Items on page: ' + str(len(clear_beds_num_items)))
 
             # get elements from pages and add into common list
-            print(f'Image URL: ' + str(clearImageURLItems[elementId]))
-            for i in clearImageURLItems:
+            for i in clear_image_url_items:
                 image_url_items.append(i)
-            print(f'Price: ' + clearPriceItems[elementId])
-            for i in clearPriceItems:
+            for i in clear_price_items:
                 price_items.append(i)
-            print(f'Description: ' + clearDescriptionItems[elementId])
-            for i in clearDescriptionItems:
+            for i in clear_description_items:
                 description_items.append(i)
-            print(f'Title: ' + clearTitleItems[elementId])
-            for i in clearTitleItems:
+            for i in clear_title_items:
                 title_items.append(i)
-            print(f'Date: ' + clearDateItems[elementId])
-            for i in clearDateItems:
+            for i in clear_date_items:
                 date_items.append(i)
-            print(f'Bedrooms: ' + clearBedsNumItems[elementId])
-            for i in clearBedsNumItems:
+            for i in clear_beds_num_items:
                 bedrooms_items.append(i)
-            print(f'Location: ' + clearLocationItems[elementId])
-            for i in clearLocationItems:
+            for i in clear_location_items:
                 location_items.append(i)
 
     elif page.status_code == 500:
@@ -241,69 +213,23 @@ print(f'Date num: ' + str(len(date_items)))
 
 # add items to Postgres--------------------------------------------------
 
-#new_apartment = Apartment(imageURL='imageURL',
-#                            title='Title',
-#                            date='09-10-2022',
-#                            location='LA',
-#                            bedrooms='4',
-#                            description='Some text',
-#                            price='500')
-
-while True:
-    session = Session()
-    for image_url, title, date, location, bedrooms, description, price in zip(image_url_items,
-                                                                              title_items,
-                                                                              date_items,
-                                                                              location_items,
-                                                                              bedrooms_items,
-                                                                              description_items,
-                                                                              price_items):
-        new_apartment = Apartment(imageURL=image_url,
-                                  title=title,
-                                  date=date,
-                                  location=location,
-                                  bedrooms=bedrooms,
-                                  description=description,
-                                  price=price)
-        session.add(new_apartment)
-        session.commit()
-    break
-    for i in image_url_items:
-        #session = Session()
-        new_apartment = Apartment(imageURL=i)
-        session.add(new_apartment)
-        #session.commit()
-    for i in title_items:
-        #session = Session()
-        new_apartment = Apartment(title=i)
-        session.add(new_apartment)
-        #session.commit()
-    #session.add(new_apartment)
+session = Session()
+# with loop add data to Postgres
+for image_url, title, date, location, bedrooms, description, price in zip(image_url_items,
+                                                                          title_items,
+                                                                          date_items,
+                                                                          location_items,
+                                                                          bedrooms_items,
+                                                                          description_items,
+                                                                          price_items):
+    new_apartment = Apartment(imageURL=image_url,
+                              title=title,
+                              date=date,
+                              location=location,
+                              bedrooms=bedrooms,
+                              description=description,
+                              price=price)
+    session.add(new_apartment)
     session.commit()
-    for i in date_items:
-        session = Session()
-        new_apartment = Apartment(date=i)
-        session.add(new_apartment)
-        session.commit()
-    for i in location_items:
-        session = Session()
-        new_apartment = Apartment(location=i)
-        session.add(new_apartment)
-        session.commit()
-    for i in bedrooms_items:
-        session = Session()
-        new_apartment = Apartment(bedrooms=i)
-        session.add(new_apartment)
-        session.commit()
-    for i in description_items:
-        session = Session()
-        new_apartment = Apartment(description=i)
-        session.add(new_apartment)
-        session.commit()
-    for i in price_items:
-        session = Session()
-        new_apartment = Apartment(price=i)
-        session.add(new_apartment)
-        session.commit()
 
-print(f'----------------Completed----------------')
+print(f'----------------END----------------')
