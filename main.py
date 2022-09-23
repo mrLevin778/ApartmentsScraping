@@ -110,7 +110,6 @@ while is_last_page == True:
         if site_url != exact_url and exact_url != site_first_page:
             is_last_page = False
         else:
-            print(f'Flag: ' + str(is_last_page))
 
             # extract price
             all_price_items = soup.find_all('div', attrs={"class": "price"})
@@ -135,6 +134,8 @@ while is_last_page == True:
                     if clear_item_temp[item].isdigit():
                         clear_item = ''
                         clear_item += str(clear_item_temp[item])
+                        if clear_item == '':
+                            clear_item = 'Not specified'
                 clear_beds_num_items.append(clear_item)
 
             # extract location
@@ -145,9 +146,13 @@ while is_last_page == True:
                 if item.endswith('Yesterday'):
                     clear_location_item = (item[:-9])
                 elif item.endswith('hours ago'):
-                    clear_location_item = (item[:-12])
+                    location_item = (item[:-12])
+                    if location_item.endswith('<'):
+                        clear_location_item = location_item[:-1]
                 elif item.endswith('minutes ago'):
-                    clear_location_item = (item[:-14])
+                    location_item = (item[:-14])
+                    if location_item.endswith('<'):
+                        clear_location_item = location_item[:-1]
                 else:
                     clear_location_item = (item[:-10])
                 clear_location_items.append(clear_location_item)
