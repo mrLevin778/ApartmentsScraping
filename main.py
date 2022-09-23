@@ -17,7 +17,7 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 siteAddress = "https://www.kijiji.ca"
 siteToronto = "/b-apartments-condos/city-of-toronto/page-"
 siteCategory = "/c37l1700273?ad=offering"
-sitePageNum = 0
+sitePageNum = 84
 site_first_page = 'https://www.kijiji.ca/b-apartments-condos/city-of-toronto/c37l1700273?ad=offering'
 allPages = []  # list of all pages
 elementId = 0  # test element
@@ -61,16 +61,12 @@ DeclarativeBase.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)
 
-session = Session()
+# session = Session()
 
 print(f'Session with Postgres is open!')
 
-#session.add(new_apartment)
-
-#session.commit()
-
-for item in session.query(Apartment):
-    print(item)
+#for item in session.query(Apartment):
+#    print(item)
 
 
 # db area------------------------------------------------------------------------------
@@ -254,31 +250,58 @@ print(f'Date num: ' + str(len(date_items)))
 #                            price='500')
 
 while True:
+    session = Session()
+    for image_url, title, date, location, bedrooms, description, price in zip(image_url_items,
+                                                                              title_items,
+                                                                              date_items,
+                                                                              location_items,
+                                                                              bedrooms_items,
+                                                                              description_items,
+                                                                              price_items):
+        new_apartment = Apartment(imageURL=image_url,
+                                  title=title,
+                                  date=date,
+                                  location=location,
+                                  bedrooms=bedrooms,
+                                  description=description,
+                                  price=price)
+        session.add(new_apartment)
+        session.commit()
+    break
     for i in image_url_items:
+        #session = Session()
         new_apartment = Apartment(imageURL=i)
         session.add(new_apartment)
-        session.commit()
+        #session.commit()
     for i in title_items:
+        #session = Session()
         new_apartment = Apartment(title=i)
         session.add(new_apartment)
-        session.commit()
+        #session.commit()
+    #session.add(new_apartment)
+    session.commit()
     for i in date_items:
+        session = Session()
         new_apartment = Apartment(date=i)
         session.add(new_apartment)
         session.commit()
     for i in location_items:
+        session = Session()
         new_apartment = Apartment(location=i)
         session.add(new_apartment)
         session.commit()
     for i in bedrooms_items:
+        session = Session()
         new_apartment = Apartment(bedrooms=i)
         session.add(new_apartment)
         session.commit()
     for i in description_items:
+        session = Session()
         new_apartment = Apartment(description=i)
         session.add(new_apartment)
         session.commit()
     for i in price_items:
+        session = Session()
         new_apartment = Apartment(price=i)
         session.add(new_apartment)
         session.commit()
