@@ -1,5 +1,5 @@
 
-# This is a test task for company DATA-OX
+# Додаток для скрапінгу веб-сайту оголошень зі збереженням отриманих даних в БД PostgreSQL.
 
 # ApartmentsScraping
  Modules from PIP:
